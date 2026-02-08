@@ -1,0 +1,13 @@
+name: Build release
+on:
+  push:
+    tags:
+      - '**'
+jobs:
+  release:
+    uses: lorislab/ci-templates/.github/workflows/lib-build-release.yml@main
+    secrets:
+      GPG_PRIVATE_KEY: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+      GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+      SERVER_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+      SERVER_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}

@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.lorislab.lib</groupId>
+    <artifactId>lorislab-lib-parent</artifactId>
+    <version>1.0.0</version>
+  </parent>
+
+  <groupId>org.lorislab.lorisgate</groupId>
+  <artifactId>lorisgate-quarkus-parent</artifactId>
+  <name>lorisgate-quarkus-parent</name>
+  <version>999-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+
+  <description>Lorisgate Quarkus Extension</description>
+  <url>https://github.com/lorislab/lorisgate-quarkus</url>
+
+  <organization>
+    <name>lorislab</name>
+    <url>https://lorislab.org</url>
+  </organization>
+
+  <developers>
+    <developer>
+      <id>andrejpetras</id>
+      <name>Andrej Petras</name>
+      <organization>lorislab</organization>
+      <organizationUrl>https://lorislab.org</organizationUrl>
+    </developer>
+  </developers>
+
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <scm>
+    <connection>scm:git:git@github.com:lorislab/lorisgate-quarkus.git</connection>
+    <developerConnection>scm:git:git@github.com:lorislab/lorisgate-quarkus.git</developerConnection>
+    <url>https://github.com/lorislab/lorisgate-quarkus</url>
+  </scm>
+
+  <modules>
+    <module>client</module>
+    <module>runtime</module>
+    <module>deployment</module>
+<!--    <module>integration-tests</module>-->
+  </modules>
+
+  <properties>
+    <!-- Quarkus configuration -->
+    <quarkus.version>3.31.2</quarkus.version>
+    <quarkiverse.quarkus-openapi-generator.version>2.14.0</quarkiverse.quarkus-openapi-generator.version>
+
+    <!-- Maven configuration -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.parameters>true</maven.compiler.parameters>
+    <maven.compiler-plugin.version>3.14.1</maven.compiler-plugin.version>
+    <maven.surefire-plugin.version>3.5.4</maven.surefire-plugin.version>
+
+    <!-- Other -->
+    <assertj.version>3.27.6</assertj.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-bom</artifactId>
+        <version>${quarkus.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.quarkiverse.openapi.generator</groupId>
+        <artifactId>quarkus-openapi-generator</artifactId>
+        <version>${quarkiverse.quarkus-openapi-generator.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.quarkiverse.openapi.generator</groupId>
+        <artifactId>quarkus-openapi-generator-oidc</artifactId>
+        <version>${quarkiverse.quarkus-openapi-generator.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.quarkiverse.openapi.generator</groupId>
+        <artifactId>quarkus-openapi-generator-deployment</artifactId>
+        <version>${quarkiverse.quarkus-openapi-generator.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.assertj</groupId>
+        <artifactId>assertj-core</artifactId>
+        <version>${assertj.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <!-- Build -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-arc</artifactId>
+    </dependency>
+    <!-- Test -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.rest-assured</groupId>
+      <artifactId>rest-assured</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.awaitility</groupId>
+      <artifactId>awaitility</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+  <plugins>
+  <plugin>
+    <groupId>io.quarkus</groupId>
+    <artifactId>quarkus-maven-plugin</artifactId>
+    <version>${quarkus.version}</version>
+    <extensions>true</extensions>
+    <executions>
+      <execution>
+        <goals>
+          <goal>build</goal>
+        </goals>
+      </execution>
+    </executions>
+  </plugin>
+  <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <version>${maven.compiler-plugin.version}</version>
+    <configuration>
+      <compilerArgs>
+        <arg>-parameters</arg>
+      </compilerArgs>
+      <showWarnings>true</showWarnings>
+    </configuration>
+  </plugin>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-surefire-plugin</artifactId>
+      <version>${maven.surefire-plugin.version}</version>
+      <configuration>
+        <argLine>@{argLine}</argLine>
+        <systemPropertyVariables>
+          <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+          <!--suppress UnresolvedMavenProperty -->
+          <maven.home>${maven.home}</maven.home>
+        </systemPropertyVariables>
+      </configuration>
+    </plugin>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-failsafe-plugin</artifactId>
+      <version>${maven.surefire-plugin.version}</version>
+      <executions>
+        <execution>
+          <goals>
+            <goal>integration-test</goal>
+            <goal>verify</goal>
+          </goals>
+          <configuration>
+            <argLine>@{argLine}</argLine>
+            <systemPropertyVariables>
+              <native.image.path>${project.build.directory}/${project.build.finalName}-runner</native.image.path>
+              <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+              <!--suppress UnresolvedMavenProperty -->
+              <maven.home>${maven.home}</maven.home>
+            </systemPropertyVariables>
+          </configuration>
+        </execution>
+      </executions>
+    </plugin>
+  </plugins>
+  </build>
+
+</project>

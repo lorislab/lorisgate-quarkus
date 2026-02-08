@@ -1,4 +1,4 @@
-# Quarkus - Lorisgate Dev Service
+# Lorisgate - Quarkus Dev Service
 
 > **Repository Description**: Quarkus extension providing Dev Services for Lorisgate. Automatically starts and configures a Lorisgate instance using Testcontainers for local development and integration testing, ensuring a seamless "zero-config" experience.
 
@@ -25,8 +25,8 @@ Add the following dependency to your Quarkus project's `pom.xml`:
 
 ```xml
 <dependency>
-    <groupId>org.lorislab.quarkus</groupId>
-    <artifactId>quarkus-lorisgate</artifactId>
+   <groupId>org.lorislab.lorisgate</groupId>
+   <artifactId>lorisgate-quarkus</artifactId>
 </dependency>
 ```
 

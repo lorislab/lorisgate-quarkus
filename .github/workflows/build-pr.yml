@@ -1,0 +1,10 @@
+name: Build pr
+
+on:
+  pull_request:
+
+jobs:
+  pr:
+    uses: lorislab/ci-templates/.github/workflows/lib-build-pr.yml@main
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

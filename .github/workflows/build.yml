@@ -1,0 +1,15 @@
+name: Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'main'
+      - 'fix/[0-9]+.[0-9]+.x'
+      - '[0-9]+.x'
+
+jobs:
+  build:
+    uses: lorislab/ci-templates/.github/workflows/lib-build.yml@main
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

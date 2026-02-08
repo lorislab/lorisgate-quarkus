@@ -1,0 +1,8 @@
+name: Create fix branch
+on:
+  workflow_dispatch:
+jobs:
+  fix:
+    uses: lorislab/ci-templates/.github/workflows/common-create-fix-branch.yml@main
+    secrets:
+      CI_PAT_PR: ${{ secrets.CI_PAT_PR }}

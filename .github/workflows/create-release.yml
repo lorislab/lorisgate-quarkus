@@ -1,0 +1,8 @@
+name: Create release
+on:
+  workflow_dispatch:
+jobs:
+  release:
+    uses: lorislab/ci-templates/.github/workflows/common-create-release.yml@main
+    secrets:
+      CI_PAT_PR: ${{ secrets.CI_PAT_PR }}
