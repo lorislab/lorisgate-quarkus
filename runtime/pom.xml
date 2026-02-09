@@ -14,26 +14,13 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.lorislab.lorisgate</groupId>
-            <artifactId>lorisgate-quarkus-client</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-rest-client-jackson</artifactId>
+            <artifactId>quarkus-arc</artifactId>
         </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-rest-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkiverse.openapi.generator</groupId>
-            <artifactId>quarkus-openapi-generator-oidc</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-rest-client-oidc-filter</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>io.quarkus</groupId>-->
+<!--            <artifactId>quarkus-devservices</artifactId>-->
+<!--        </dependency>-->
     </dependencies>
 
     <build>

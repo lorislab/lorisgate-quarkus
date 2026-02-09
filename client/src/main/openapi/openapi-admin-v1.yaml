@@ -1,0 +1,478 @@
+---
+openapi: 3.0.3
+info:
+  title: lorisgate OIDC services
+  version: 1.0.0-alpha1
+servers:
+  - url: "http://lorisgate:8080"
+tags:
+  - name: realms
+  - name: users
+  - name: clients
+paths:
+  /admin/realms:
+    get:
+      operationId: getRealms
+      tags:
+        - realms
+      responses:
+        200:
+          description: Response list of realms
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RealmSearchResult'
+    post:
+      operationId: createRealm
+      tags:
+        - realms
+      requestBody:
+        description: Realm data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Realm'
+      responses:
+        201:
+          description: Realm created
+        409:
+          description: User already exists
+  /admin/realms/{realm}:
+    get:
+      operationId: getRealm
+      tags:
+        - realms
+      parameters:
+        - name: realm
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        200:
+          description: Response corresponding realm
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Realm'
+        404:
+          description: Realm not found
+    put:
+      operationId: updateRealm
+      tags:
+        - realms
+      parameters:
+        - name: realm
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        description: Realm data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Realm'
+      responses:
+        200:
+          description: Realm updated
+        404:
+          description: Realm not found
+    delete:
+      operationId: deleteRealm
+      tags:
+        - realms
+      parameters:
+        - name: realm
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        200:
+          description: Realm deleted
+        404:
+          description: Realm not found
+  /admin/realms/{realm}/users:
+    get:
+      operationId: getUsers
+      tags:
+        - users
+      parameters:
+        - name: realm
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        200:
+          description: All users
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSearchResult'
+    post:
+      operationId: createUser
+      tags:
+        - users
+      parameters:
+        - name: realm
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        201:
+          description: User created
+        409:
+          description: User already exists
+  /admin/realms/{realm}/users/{username}:
+    get:
+      operationId: getUser
+      tags:
+        - users
+      parameters:
+        - name: realm
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: username
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        200:
+          description: Response corresponding user data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        404:
+          description: User not found
+    put:
+      operationId: updateUser
+      tags:
+        - users
+      parameters:
+        - name: realm
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: username
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        200:
+          description: User updated
+        404:
+          description: User not found
+    delete:
+      operationId: deleteUser
+      tags:
+        - users
+      parameters:
+        - name: realm
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: username
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        200:
+          description: User deleted
+        404:
+          description: User not found
+  /admin/realms/{realm}/clients:
+    get:
+      operationId: getClients
+      tags:
+        - clients
+      parameters:
+        - name: realm
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        200:
+          description: Response list of realm clients
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientSearchResult'
+    post:
+      operationId: createClient
+      tags:
+        - clients
+      parameters:
+        - name: realm
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Client'
+      responses:
+        201:
+          description: Client created
+        409:
+          description: Client already exists
+  /admin/realms/{realm}/clients/{clientId}:
+    get:
+      operationId: getClient
+      tags:
+        - clients
+      parameters:
+        - name: realm
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: clientId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        200:
+          description: Response corresponding client data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+        404:
+          description: Client not found
+    put:
+      operationId: updateClient
+      tags:
+        - clients
+      parameters:
+        - name: realm
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: clientId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Client'
+      responses:
+        200:
+          description: Client updated
+        404:
+          description: Client not found
+    delete:
+      operationId: deleteClient
+      tags:
+        - clients
+      parameters:
+        - name: realm
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: clientId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        200:
+          description: Client deleted
+        404:
+          description: Client not found
+components:
+  schemas:
+    RealmSearchResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/RealmItem'
+    RealmItem:
+      type: object
+      description: Realm item with name and displayName
+      properties:
+        name:
+          type: string
+          description: Realm id/name identifier.
+        displayName:
+          type: string
+          description: Realm display name identifier.
+    Realm:
+      type: object
+      description: A realm containing named clients and users.
+      properties:
+        name:
+          type: string
+          description: Realm id/name identifier.
+        frontendUrl:
+          type: string
+          description: Optional URL for realm front-end.
+        displayName:
+          type: string
+          description: Realm display name identifier.
+        enabled:
+          type: boolean
+          default: "true"
+        roles:
+          type: object
+          description: Realm roles
+          additionalProperties:
+            $ref: '#/components/schemas/Role'
+        clients:
+          type: object
+          description: Map of client-id -> Client configuration.
+          additionalProperties:
+            $ref: '#/components/schemas/Client'
+        users:
+          type: object
+          description: Map of username (or chosen key) -> User record.
+          additionalProperties:
+            $ref: '#/components/schemas/User'
+    Role:
+      type: object
+      description: Realm role
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        enabled:
+          type: boolean
+          description: Whether the role is enabled.
+          default: true
+          example: true
+    ClientSearchResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Client'
+    Client:
+      type: object
+      description: OAuth2/OIDC client registration within the realm.
+      properties:
+        clientId:
+          type: string
+        clientSecret:
+          type: string
+          nullable: true
+          description: Client secret (present for confidential clients).
+        confidential:
+          type: boolean
+          description: Whether the client is confidential.
+          default: true
+          example: true
+        scopes:
+          type: array
+          description: Allowed scopes for the client.
+          items:
+            type: string
+          uniqueItems: true
+        roles:
+          type: array
+          description: Client roles which may appear in issued tokens.
+          items:
+            type: string
+          uniqueItems: true
+        redirectUris:
+          type: array
+          description: Client redirect URI.
+          items:
+            type: string
+          uniqueItems: true
+      required:
+        - clientId
+    UserSearchResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+    User:
+      type: object
+      description: User account within the realm.
+      properties:
+        username:
+          type: string
+        id:
+          type: string
+          description: Server-generated identifier (UUID).
+          example: "c8d8a30a-2bc7-43f3-8b7d-2e6f2a9f8f8c"
+        enabled:
+          type: boolean
+          description: Whether the user is enabled.
+          default: true
+          example: true
+        roles:
+          type: array
+          description: Realm or application roles assigned to the user.
+          items:
+            type: string
+          uniqueItems: true
+          example: ["user", "editor"]
+        name:
+          type: string
+          description: Full display name.
+          example: "Alice Example"
+        givenName:
+          type: string
+          description: First name (given name).
+          example: "Alice"
+        familyName:
+          type: string
+          description: Surname (family name).
+          example: "Example"
+        email:
+          type: string
+          format: email
+          description: Email address.
+          example: "alice@example.com"
+        password:
+          type: string
+          format: password
+          writeOnly: true
+          description: Plaintext password (only used on create/update; never returned).
+        emailVerified:
+          type: boolean
+        groups:
+          type: array
+          description: Realm or application groups assigned to the user.
+          items:
+            type: string
+          uniqueItems: true
+          example: ["user", "editor"]
+      required:
+        - username

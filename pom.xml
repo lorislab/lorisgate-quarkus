@@ -50,7 +50,7 @@
     <module>client</module>
     <module>runtime</module>
     <module>deployment</module>
-<!--    <module>integration-tests</module>-->
+    <module>integration-tests</module>
   </modules>
 
   <properties>
@@ -101,11 +101,6 @@
   </dependencyManagement>
 
   <dependencies>
-    <!-- Build -->
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-arc</artifactId>
-    </dependency>
     <!-- Test -->
     <dependency>
       <groupId>io.quarkus</groupId>

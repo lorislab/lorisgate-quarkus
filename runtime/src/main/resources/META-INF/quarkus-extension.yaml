@@ -1,0 +1,11 @@
+name: Lorisgate
+description: Lorisgate DevService for testing.
+metadata:
+  keywords:
+    - lorisgate
+    - test
+  categories:
+    - "testing"
+  status: "preview"
+  config:
+    - "lorislab.lorisgate."
