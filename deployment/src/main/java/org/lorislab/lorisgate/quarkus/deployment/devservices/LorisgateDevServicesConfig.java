@@ -90,4 +90,18 @@ public interface LorisgateDevServicesConfig {
     @WithName("container-env")
     @ConfigDocMapKey("environment-variable-name")
     Map<String, String> containerEnv();
+
+    /**
+     * Volume mounts.
+     */
+    @WithName("volume-mounts")
+    Map<String, String> volumeMounts();
+
+    /**
+     * MockServer's configuration class-path binding. Useful for the test and CI builds.
+     * When set to {@code true}, a test-container {@code withClasspathResourceMapping} method is used.
+     */
+    @WithName("config-class-path")
+    @WithDefault("false")
+    boolean configClassPath();
 }

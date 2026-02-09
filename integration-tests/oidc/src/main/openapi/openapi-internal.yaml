@@ -1,0 +1,46 @@
+openapi: 3.0.3
+info:
+  title: test-oidc
+  description: test oidc
+  version: "2.0"
+servers:
+  - url: http://test-oidc:8080/
+tags:
+  - name: request
+  - name: backend
+paths:
+  /impl/oidc/svc:
+    get:
+      tags:
+        - backend
+      description: Test OIDC service
+      operationId: testOidcService
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+  /test/oidc/client:
+    get:
+      tags:
+        - request
+      description: Test OIDC client
+      operationId: testOidcClient
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+components:
+  schemas:
+    Token:
+      type: object
+      properties:
+        raw:
+          type: string
+        json:
+          type: object

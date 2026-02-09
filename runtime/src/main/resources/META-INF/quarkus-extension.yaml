@@ -6,6 +6,6 @@ metadata:
     - test
   categories:
     - "testing"
-  status: "preview"
+  status: "stable"
   config:
     - "lorislab.lorisgate."
