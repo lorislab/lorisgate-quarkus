@@ -77,7 +77,7 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <inputSpec>src/main/openapi/openapi-internal.yaml</inputSpec>
+                            <inputSpec>${basedir}/src/main/openapi/openapi-internal.yaml</inputSpec>
                             <apiPackage>gen.org.lorislab.lorisgate.quarkus.it.oidc.rs</apiPackage>
                             <modelPackage>gen.org.lorislab.lorisgate.quarkus.it.oidc.rs.model</modelPackage>
                         </configuration>
