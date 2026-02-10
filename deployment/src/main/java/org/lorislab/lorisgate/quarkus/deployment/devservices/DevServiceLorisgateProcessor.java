@@ -1,11 +1,10 @@
 package org.lorislab.lorisgate.quarkus.deployment.devservices;
 
-import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
 import static io.quarkus.devservices.common.ConfigureUtil.configureSharedServiceLabel;
 import static io.quarkus.devservices.common.ContainerLocator.locateContainerWithLabels;
 import static io.quarkus.runtime.LaunchMode.DEVELOPMENT;
 import static org.lorislab.lorisgate.quarkus.deployment.LorisgateProcessor.FEATURE_NAME;
-import static org.lorislab.lorisgate.quarkus.deployment.devservices.LorisgateDevServiceUtils.createWebClient;
+import static org.lorislab.lorisgate.quarkus.deployment.devservices.LorisgateClient.*;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -23,27 +22,15 @@ import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
-import gen.org.lorislab.lorisgate.client.admin.v1.model.ClientV1DTO;
-import gen.org.lorislab.lorisgate.client.admin.v1.model.RealmV1DTO;
-import gen.org.lorislab.lorisgate.client.admin.v1.model.UserV1DTO;
 import io.quarkus.deployment.IsDevServicesSupportedByLaunchMode;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.BuildSteps;
 import io.quarkus.deployment.builditem.*;
-import io.quarkus.deployment.console.ConsoleInstalledBuildItem;
-import io.quarkus.deployment.console.StartupLogCompressor;
 import io.quarkus.deployment.dev.devservices.DevServicesConfig;
-import io.quarkus.deployment.logging.LoggingSetupBuildItem;
 import io.quarkus.devservices.common.ConfigureUtil;
 import io.quarkus.devservices.common.ContainerLocator;
 import io.quarkus.devservices.common.ContainerShutdownCloseable;
 import io.quarkus.runtime.LaunchMode;
-import io.vertx.core.Vertx;
-import io.vertx.core.json.Json;
-import io.vertx.mutiny.core.buffer.Buffer;
-import io.vertx.mutiny.core.http.HttpHeaders;
-import io.vertx.mutiny.ext.web.client.HttpResponse;
-import io.vertx.mutiny.ext.web.client.WebClient;
 
 @BuildSteps(onlyIf = { IsDevServicesSupportedByLaunchMode.class, DevServicesConfig.Enabled.class })
 public class DevServiceLorisgateProcessor {
@@ -67,9 +54,6 @@ public class DevServiceLorisgateProcessor {
     @BuildStep
     public DevServicesResultBuildItem startContainers(LaunchModeBuildItem launchMode,
             DockerStatusBuildItem dockerStatusBuildItem,
-            DevServicesComposeProjectBuildItem composeProjectBuildItem,
-            LoggingSetupBuildItem loggingSetupBuildItem,
-            Optional<ConsoleInstalledBuildItem> consoleInstalledBuildItem,
             List<DevServicesSharedNetworkBuildItem> sharedNetwork,
             CuratedApplicationShutdownBuildItem closeBuildItem,
             LorisgateBuildTimeConfig lorisgateBuildTimeConfig,
@@ -93,27 +77,15 @@ public class DevServiceLorisgateProcessor {
 
         capturedDevServicesConfiguration = currentDevServicesConfiguration;
 
-        StartupLogCompressor compressor = new StartupLogCompressor(
-                (launchMode.isTest() ? "(test) " : "") + "Lorisgate Dev Services Starting:", consoleInstalledBuildItem,
-                loggingSetupBuildItem);
-
         try {
-
             boolean useSharedNetwork = DevServicesSharedNetworkBuildItem.isSharedNetworkRequired(devServicesConfig,
                     sharedNetwork);
 
-            devServices = startContainer(dockerStatusBuildItem, composeProjectBuildItem,
+            devServices = startContainer(dockerStatusBuildItem,
                     launchMode.getLaunchMode(),
                     currentDevServicesConfiguration,
                     useSharedNetwork, devServicesConfig.timeout());
-            if (devServices == null) {
-                compressor.closeAndDumpCaptured();
-            } else {
-                compressor.close();
-            }
-
         } catch (Throwable t) {
-            compressor.closeAndDumpCaptured();
             throw new RuntimeException(t);
         }
 
@@ -146,7 +118,6 @@ public class DevServiceLorisgateProcessor {
     }
 
     private DevServicesResultBuildItem.RunningDevService startContainer(DockerStatusBuildItem dockerStatusBuildItem,
-            DevServicesComposeProjectBuildItem composeProjectBuildItem,
             LaunchMode launchMode,
             LorisgateDevServicesConfig devServicesConfig, boolean useSharedNetwork, Optional<Duration> timeout) {
 
@@ -213,83 +184,67 @@ public class DevServiceLorisgateProcessor {
             // start test-container
             container.start();
 
-            var realm = new RealmV1DTO().displayName("quarkus")
-                    .name("quarkus").enabled(true)
-                    .users(
-                            Map.of(
-                                    "alice",
-                                    new UserV1DTO().enabled(true).name("alice").id("alice").password("alice").username("alice")
-                                            .roles(Set.of("admin", "user")),
-                                    "bob",
-                                    new UserV1DTO().enabled(true).name("bob").id("bob").password("bob").username("bob")
-                                            .roles(Set.of("user"))))
-                    .clients(
-                            Map.of(
-                                    "quarkus-app",
-                                    new ClientV1DTO().clientId("quarkus-app").clientSecret("secret").confidential(true)
-                                            .scopes(Set.of("openid", "profile", "email")),
-                                    "quarkus-app-public",
-                                    new ClientV1DTO().clientId("quarkus-app-public").confidential(false)
-                                            .scopes(Set.of("openid", "profile", "email")).redirectUris(Set.of("*"))));
+            // create realms
+            try (var client = LorisgateClient.create(container.getDevEndpoint())) {
 
-            Vertx vertxInstance = Vertx.vertx();
-            try {
-                WebClient client = createWebClient(vertxInstance);
-                try {
-                    HttpResponse<Buffer> createRealmResponse = client.postAbs(container.getDevEndpoint() + "/admin/realms")
-                            .putHeader(HttpHeaders.CONTENT_TYPE.toString(), APPLICATION_JSON.toString())
-                            .sendBuffer(Buffer.buffer().appendString(Json.encode(realm)))
-                            .await().atMost(Duration.ofSeconds(300));
-
-                    if (createRealmResponse.statusCode() != 201) {
-                        throw new RuntimeException("Failed to create quarkus realm in lorisgate dev service, status: "
-                                + createRealmResponse.statusCode() + ", body: " + createRealmResponse.bodyAsString());
-                    }
-                } finally {
-                    client.close();
+                if (devServicesConfig.realm().create()) {
+                    log.info("Creating realm '{}' if not exists", devServicesConfig.realm().name());
+                    client.createIfNotExistsRealm(
+                            createDefaultRealm(devServicesConfig.realm().name(), devServicesConfig.realm()));
                 }
-            } finally {
-                vertxInstance.close();
+                if (devServicesConfig.realms() != null && !devServicesConfig.realms().isEmpty()) {
+                    for (var realmEntry : devServicesConfig.realms().entrySet()) {
+                        client.createIfNotExistsRealm(createRealm(realmEntry.getKey(), realmEntry.getValue()));
+                    }
+                }
             }
 
+            Map<String, String> properties = new HashMap<>();
+            properties.put(LorisgateServerConfig.HOST, container.getDevHost());
+            properties.put(LorisgateServerConfig.PORT, "" + container.getDevPort());
+            properties.put(LorisgateServerConfig.ENDPOINT, container.getDevEndpoint());
+            properties.put(LorisgateServerConfig.CLIENT_HOST, container.getHost());
+            properties.put(LorisgateServerConfig.CLIENT_PORT, "" + container.getServerPort());
+
+            addProperties(properties, container.getDevEndpoint(), devServicesConfig);
+
             return new DevServicesResultBuildItem.RunningDevService(FEATURE_NAME, container.getContainerId(),
-                    new ContainerShutdownCloseable(container, FEATURE_NAME),
-                    Map.of(LorisgateServerConfig.HOST, container.getDevHost(),
-                            LorisgateServerConfig.PORT, "" + container.getDevPort(),
-                            LorisgateServerConfig.ENDPOINT, container.getDevEndpoint(),
-                            LorisgateServerConfig.CLIENT_HOST, container.getHost(),
-                            LorisgateServerConfig.CLIENT_PORT, "" + container.getServerPort()));
+                    new ContainerShutdownCloseable(container, FEATURE_NAME), properties);
         };
 
         return lorisgateContainerLocator
                 .locateContainer(devServicesConfig.serviceName(), devServicesConfig.shared(), launchMode)
                 .map(containerAddress -> {
 
-                    return new DevServicesResultBuildItem.RunningDevService(FEATURE_NAME, containerAddress.getId(),
-                            null,
-                            Map.of(LorisgateServerConfig.HOST, containerAddress.getHost(),
-                                    LorisgateServerConfig.PORT, "" + containerAddress.getPort(),
-                                    LorisgateServerConfig.CLIENT_HOST, containerAddress.getHost(),
-                                    LorisgateServerConfig.CLIENT_PORT, "" + containerAddress.getPort(),
-                                    LorisgateServerConfig.ENDPOINT, String.format("http://%s:%d",
-                                            containerAddress.getHost(), containerAddress.getPort())));
+                    var endpoint = String.format("http://%s:%d", containerAddress.getHost(), containerAddress.getPort());
+
+                    Map<String, String> properties = new HashMap<>();
+                    properties.put(LorisgateServerConfig.HOST, containerAddress.getHost());
+                    properties.put(LorisgateServerConfig.PORT, "" + containerAddress.getPort());
+                    properties.put(LorisgateServerConfig.CLIENT_HOST, containerAddress.getHost());
+                    properties.put(LorisgateServerConfig.CLIENT_PORT, "" + containerAddress.getPort());
+                    properties.put(LorisgateServerConfig.ENDPOINT, endpoint);
+                    addProperties(properties, endpoint, devServicesConfig);
+
+                    return new DevServicesResultBuildItem.RunningDevService(FEATURE_NAME, containerAddress.getId(), null,
+                            properties);
                 })
                 .orElseGet(defaultMockServerSupplier);
     }
 
-    private boolean devServiceDisabled(DockerStatusBuildItem dockerStatusBuildItem, LorisgateDevServicesConfig config) {
-        if (!config.enabled().orElse(true)) {
-            // explicitly disabled
-            log.debug("Not starting dev services for Lorisgate, as it has been disabled in the config.");
-            return true;
+    private void addProperties(Map<String, String> properties, String endpoint, LorisgateDevServicesConfig devServicesConfig) {
+        String authUrl = endpoint + "/realms/" + devServicesConfig.realm().name();
+        if (devServicesConfig.realm().create()) {
+            properties.put(LorisgateServerConfig.OIDC_AUTH_URL, authUrl);
+            properties.put(LorisgateServerConfig.OIDC_CLIENT_ID, DEFAULT_CLIENT_ID);
+            properties.put(LorisgateServerConfig.OIDC_CLIENT_SECRET, DEFAULT_CLIENT_SECRET);
         }
 
-        if (!dockerStatusBuildItem.isContainerRuntimeAvailable()) {
-            log.warn(
-                    "Docker isn't working, please configure the OIDC server.");
-            return true;
+        if (devServicesConfig.oidc().enableQuarkusOidc()) {
+            properties.put("quarkus.oidc.auth-server-url", authUrl);
+            properties.put("quarkus.oidc.client-id", DEFAULT_CLIENT_ID);
+            properties.put("quarkus.oidc.credentials.secret", DEFAULT_CLIENT_SECRET);
         }
-        return false;
     }
 
     private static class LorisgateContainer extends GenericContainer<LorisgateContainer> implements Startable {
@@ -400,4 +355,5 @@ public class DevServiceLorisgateProcessor {
             return getMappedPort(LORISGATE_EXPOSED_PORT);
         }
     }
+
 }
