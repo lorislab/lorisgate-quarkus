@@ -1,17 +1,16 @@
 package org.lorislab.lorisgate.quarkus.deployment.devservices;
 
+import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
 import static io.quarkus.devservices.common.ConfigureUtil.configureSharedServiceLabel;
 import static io.quarkus.devservices.common.ContainerLocator.locateContainerWithLabels;
 import static io.quarkus.runtime.LaunchMode.DEVELOPMENT;
 import static org.lorislab.lorisgate.quarkus.deployment.LorisgateProcessor.FEATURE_NAME;
+import static org.lorislab.lorisgate.quarkus.deployment.devservices.LorisgateDevServiceUtils.createWebClient;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.OptionalInt;
+import java.util.*;
 import java.util.function.Supplier;
 
 import org.lorislab.lorisgate.quarkus.deployment.LorisgateBuildTimeConfig;
@@ -24,6 +23,9 @@ import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
+import gen.org.lorislab.lorisgate.client.admin.v1.model.ClientV1DTO;
+import gen.org.lorislab.lorisgate.client.admin.v1.model.RealmV1DTO;
+import gen.org.lorislab.lorisgate.client.admin.v1.model.UserV1DTO;
 import io.quarkus.deployment.IsDevServicesSupportedByLaunchMode;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.BuildSteps;
@@ -36,6 +38,12 @@ import io.quarkus.devservices.common.ConfigureUtil;
 import io.quarkus.devservices.common.ContainerLocator;
 import io.quarkus.devservices.common.ContainerShutdownCloseable;
 import io.quarkus.runtime.LaunchMode;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.Json;
+import io.vertx.mutiny.core.buffer.Buffer;
+import io.vertx.mutiny.core.http.HttpHeaders;
+import io.vertx.mutiny.ext.web.client.HttpResponse;
+import io.vertx.mutiny.ext.web.client.WebClient;
 
 @BuildSteps(onlyIf = { IsDevServicesSupportedByLaunchMode.class, DevServicesConfig.Enabled.class })
 public class DevServiceLorisgateProcessor {
@@ -204,6 +212,45 @@ public class DevServiceLorisgateProcessor {
 
             // start test-container
             container.start();
+
+            var realm = new RealmV1DTO().displayName("quarkus")
+                    .name("quarkus").enabled(true)
+                    .users(
+                            Map.of(
+                                    "alice",
+                                    new UserV1DTO().enabled(true).name("alice").id("alice").password("alice").username("alice")
+                                            .roles(Set.of("admin", "user")),
+                                    "bob",
+                                    new UserV1DTO().enabled(true).name("bob").id("bob").password("bob").username("bob")
+                                            .roles(Set.of("user"))))
+                    .clients(
+                            Map.of(
+                                    "quarkus-app",
+                                    new ClientV1DTO().clientId("quarkus-app").clientSecret("secret").confidential(true)
+                                            .scopes(Set.of("openid", "profile", "email")),
+                                    "quarkus-app-public",
+                                    new ClientV1DTO().clientId("quarkus-app-public").confidential(false)
+                                            .scopes(Set.of("openid", "profile", "email")).redirectUris(Set.of("*"))));
+
+            Vertx vertxInstance = Vertx.vertx();
+            try {
+                WebClient client = createWebClient(vertxInstance);
+                try {
+                    HttpResponse<Buffer> createRealmResponse = client.postAbs(container.getDevEndpoint() + "/admin/realms")
+                            .putHeader(HttpHeaders.CONTENT_TYPE.toString(), APPLICATION_JSON.toString())
+                            .sendBuffer(Buffer.buffer().appendString(Json.encode(realm)))
+                            .await().atMost(Duration.ofSeconds(300));
+
+                    if (createRealmResponse.statusCode() != 201) {
+                        throw new RuntimeException("Failed to create quarkus realm in lorisgate dev service, status: "
+                                + createRealmResponse.statusCode() + ", body: " + createRealmResponse.bodyAsString());
+                    }
+                } finally {
+                    client.close();
+                }
+            } finally {
+                vertxInstance.close();
+            }
 
             return new DevServicesResultBuildItem.RunningDevService(FEATURE_NAME, container.getContainerId(),
                     new ContainerShutdownCloseable(container, FEATURE_NAME),
