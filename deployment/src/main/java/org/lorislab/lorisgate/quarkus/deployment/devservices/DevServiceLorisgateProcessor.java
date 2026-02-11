@@ -39,7 +39,7 @@ public class DevServiceLorisgateProcessor {
 
     private static final String DEFAULT_LORISLAB_CONTAINER_IMAGE = "ghcr.io/lorislab/lorisgate";
     private static final DockerImageName LORISGATE_IMAGE_NAME = DockerImageName.parse(DEFAULT_LORISLAB_CONTAINER_IMAGE)
-            .withTag("main");
+            .withTag("0.2.0");
 
     public static final int LORISGATE_EXPOSED_PORT = 8080;
     private static final String DEV_SERVICE_LABEL = "lorislab-dev-service-lorisgate";
