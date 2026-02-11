@@ -16,10 +16,10 @@ When Quarkus starts in **Dev Mode** (`quarkus dev`) or **Test Mode** (`maven tes
 
 ## Features
 
-* 🚀 **Zero-Config**: Get up and running without touching `application.properties`.
-* 🔄 **Lifecycle Management**: Automatically starts on boot and stops when the Quarkus process ends.
-* 🤝 **Shared Instances**: Keeps the container running across live-reloads to save time.
-* 🛠️ **Customizable**: Easily override the image version or port if needed.
+* **Zero-Config**: Get up and running without touching `application.properties`.
+* **Lifecycle Management**: Automatically starts on boot and stops when the Quarkus process ends.
+* **Shared Instances**: Keeps the container running across live-reloads to save time.
+* **Customizable**: Easily override the image version or port if needed.
 
 ## Installation
 
