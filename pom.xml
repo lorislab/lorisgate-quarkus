@@ -55,7 +55,7 @@
 
   <properties>
     <!-- Quarkus configuration -->
-    <quarkus.version>3.31.2</quarkus.version>
+    <quarkus.version>3.31.3</quarkus.version>
     <quarkiverse.quarkus-openapi-generator.version>2.14.0</quarkiverse.quarkus-openapi-generator.version>
 
     <!-- Maven configuration -->
