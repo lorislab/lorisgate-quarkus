@@ -4,6 +4,8 @@
 
 ---
 
+[![Maven Central](https://img.shields.io/maven-central/v/org.lorislab.lorisgate/lorisgate-quarkus?style=for-the-badge)](https://search.maven.org/search?q=g:org.lorislab.lorisgate%20AND%20a:lorisgate-quarkus)
+[![GitHub Release](https://img.shields.io/github/v/release/lorislab/lorislab-quarkus-lorisgate?style=for-the-badge)](https://github.com/lorislab/lorislab-quarkus-lorisgate/releases)
 ![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=for-the-badge)
 
 ## Overview
