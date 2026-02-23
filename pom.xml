@@ -62,7 +62,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.parameters>true</maven.compiler.parameters>
     <maven.compiler-plugin.version>3.15.0</maven.compiler-plugin.version>
-    <maven.surefire-plugin.version>3.5.4</maven.surefire-plugin.version>
+    <maven.surefire-plugin.version>3.5.5</maven.surefire-plugin.version>
 
     <!-- Other -->
     <assertj.version>3.27.7</assertj.version>
